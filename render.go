@@ -28,17 +28,19 @@ type Options struct {
 	Globals    map[string]interface{}
 }
 
-var cacheIndexes map[string]*pongo2.Template
+// tplIndexes template name path indexes
+var tplIndexes map[string]string
 
 // New create a template engine
 func New(o Options) *Render {
-	// init cache map
-	cacheIndexes = make(map[string]*pongo2.Template)
+	// init index map
+	tplIndexes = map[string]string{}
 
 	r := new(Render)
 	r.Baa = o.Baa
 	r.Root = o.Root
 	r.Extensions = o.Extensions
+	r.Globals = o.Globals
 
 	// check template dir
 	if r.Root == "" {
@@ -70,11 +72,11 @@ func New(o Options) *Render {
 		pongo2.RegisterFilter(name, filter)
 	}
 
-	// load templates
-	r.loadTpls()
-
 	// notify
 	if baa.Env != baa.PROD {
+		// enable debug mode
+		pongo2.DefaultSet.Debug = true
+
 		r.fileChanges = make(chan notifyItem, 8)
 		go r.notify()
 		go func() {
@@ -89,14 +91,22 @@ func New(o Options) *Render {
 		}()
 	}
 
+	// load templates
+	r.loadTpls()
+
 	return r
 }
 
 // Render template
 func (r *Render) Render(w io.Writer, tpl string, data interface{}) error {
-	template, ok := cacheIndexes[tpl]
+	path, ok := tplIndexes[tpl]
 	if !ok {
 		return fmt.Errorf("pongo2.Render: tpl %s not found", tpl)
+	}
+
+	t, err := pongo2.FromCache(path)
+	if err != nil {
+		return err
 	}
 
 	ctx, err := r.buildContext(data)
@@ -104,7 +114,7 @@ func (r *Render) Render(w io.Writer, tpl string, data interface{}) error {
 		return err
 	}
 
-	return template.ExecuteWriter(ctx, w)
+	return t.ExecuteWriter(ctx, w)
 }
 
 // buildContext build pongo2 render context
@@ -112,7 +122,7 @@ func (r *Render) buildContext(in interface{}) (pongo2.Context, error) {
 	ctx := map[string]interface{}{}
 
 	// fill in global
-	for k, v := range r.Options.Globals {
+	for k, v := range r.Globals {
 		ctx[k] = v
 	}
 
@@ -210,14 +220,14 @@ func (r *Render) checkExt(path string) bool {
 // parseFile load file and parse to template
 func (r *Render) parseFile(path string) error {
 	// parse template
-	t, err := pongo2.FromFile(path)
+	_, err := pongo2.FromCache(path)
 	if err != nil {
 		return err
 	}
 
-	// cache template
+	// add to indexes
 	tpl := r.tplName(path)
-	cacheIndexes[tpl] = t
+	tplIndexes[tpl] = path
 
 	return nil
 }

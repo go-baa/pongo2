@@ -16,17 +16,16 @@ import (
 // Render the pongo2 template engine
 type Render struct {
 	Options
-	fileChanges chan notifyItem // notify file changes
 }
 
 // Options render options
 type Options struct {
-	Baa        *baa.Baa // baa
-	Root       string   // template root dir
-	Extensions []string // template file extensions
-	Filters    map[string]pongo2.FilterFunction
-	Functions  map[string]interface{}
-	Context    map[string]interface{}
+	Baa        *baa.Baa                         // baa
+	Root       string                           // template root dir
+	Extensions []string                         // template file extensions
+	Filters    map[string]pongo2.FilterFunction // template filters
+	Functions  map[string]interface{}           // template functions
+	Context    map[string]interface{}           // template global context
 }
 
 // tplIndexes template name path indexes
@@ -34,7 +33,7 @@ var tplIndexes map[string]string
 
 // New create a template engine
 func New(o Options) *Render {
-	// init index map
+	// init indexes map
 	tplIndexes = map[string]string{}
 
 	r := new(Render)
@@ -81,23 +80,9 @@ func New(o Options) *Render {
 		r.Context[k] = v
 	}
 
-	// notify
+	// enable debug mode
 	if baa.Env != baa.PROD {
-		// enable debug mode
 		pongo2.DefaultSet.Debug = true
-
-		r.fileChanges = make(chan notifyItem, 8)
-		go r.notify()
-		go func() {
-			for item := range r.fileChanges {
-				if r.Baa != nil && r.Baa.Debug() {
-					r.Error("filechanges Receive -> " + item.path)
-				}
-				if item.event == Create || item.event == Write {
-					r.parseFile(item.path)
-				}
-			}
-		}()
 	}
 
 	// load templates
@@ -110,7 +95,7 @@ func New(o Options) *Render {
 func (r *Render) Render(w io.Writer, tpl string, data interface{}) error {
 	path, ok := tplIndexes[tpl]
 	if !ok {
-		return fmt.Errorf("pongo2.Render: tpl %s not found", tpl)
+		return fmt.Errorf("pongo2.Render: tpl [%s] not found", tpl)
 	}
 
 	t, err := pongo2.FromCache(path)
@@ -128,23 +113,22 @@ func (r *Render) Render(w io.Writer, tpl string, data interface{}) error {
 
 // buildContext build pongo2 render context
 func (r *Render) buildContext(in interface{}) (pongo2.Context, error) {
-	ctx := map[string]interface{}{}
+	// check data type
+	data, ok := in.(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("pongo2.buildContext: unsupported render data type [%v]", in)
+	}
 
 	// copy from default context
+	ctx := map[string]interface{}{}
 	for k, v := range r.Context {
 		ctx[k] = v
 	}
 
-	// check data type
-	data, ok := in.(map[string]interface{})
-	if !ok {
-		return nil, fmt.Errorf("pongo2.buildContext: unsupported render data type %v", in)
-	}
-
-	// fill in render data
+	// fill with render data
 	for k, v := range data {
 		if _, ok := ctx[k]; ok {
-			return nil, fmt.Errorf("pongo2.buildContext: render data key %s already exists", k)
+			return nil, fmt.Errorf("pongo2.buildContext: render data key [%s] already exists", k)
 		}
 		ctx[k] = v
 	}
@@ -235,7 +219,7 @@ func (r *Render) parseFile(path string) error {
 		return err
 	}
 
-	// add to indexes
+	// update indexes
 	tpl := r.tplName(path)
 	tplIndexes[tpl] = path
 

@@ -25,7 +25,8 @@ type Options struct {
 	Root       string   // template root dir
 	Extensions []string // template file extensions
 	Filters    map[string]pongo2.FilterFunction
-	Globals    map[string]interface{}
+	Functions  map[string]interface{}
+	Context    map[string]interface{}
 }
 
 // tplIndexes template name path indexes
@@ -40,7 +41,7 @@ func New(o Options) *Render {
 	r.Baa = o.Baa
 	r.Root = o.Root
 	r.Extensions = o.Extensions
-	r.Globals = o.Globals
+	r.Context = o.Context
 
 	// check template dir
 	if r.Root == "" {
@@ -70,6 +71,14 @@ func New(o Options) *Render {
 	// register filter
 	for name, filter := range o.Filters {
 		pongo2.RegisterFilter(name, filter)
+	}
+
+	// merge function into context
+	for k, v := range o.Functions {
+		if _, ok := r.Context[k]; ok {
+			panic("pongo2.New: context key[" + k + "] already exists in functions")
+		}
+		r.Context[k] = v
 	}
 
 	// notify
@@ -121,11 +130,12 @@ func (r *Render) Render(w io.Writer, tpl string, data interface{}) error {
 func (r *Render) buildContext(in interface{}) (pongo2.Context, error) {
 	ctx := map[string]interface{}{}
 
-	// fill in global
-	for k, v := range r.Globals {
+	// copy from default context
+	for k, v := range r.Context {
 		ctx[k] = v
 	}
 
+	// check data type
 	data, ok := in.(map[string]interface{})
 	if !ok {
 		return nil, fmt.Errorf("pongo2.buildContext: unsupported render data type %v", in)

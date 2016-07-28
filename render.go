@@ -119,7 +119,7 @@ func (r *Render) buildContext(in interface{}) (pongo2.Context, error) {
 		return nil, fmt.Errorf("pongo2.buildContext: unsupported render data type [%v]", in)
 	}
 
-	// copy from default context
+	// copy from global context
 	ctx := map[string]interface{}{}
 	for k, v := range r.Context {
 		ctx[k] = v

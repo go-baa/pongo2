@@ -1,35 +1,40 @@
 # pongo2
 A helper for using [Pongo2](https://godoc.org/github.com/flosch/pongo2) with Baa.
 
-## init
-
-### standalone
+## getting started
 
 ```go
-pongo2.New(pongo2.Options{
-    Root:       "templates/",
-    Extensions: []string{".html"},
-    Filters:    map[string]pongo2.FilterFunction{},
-    Functions:  map[string]interface{}{},
-    Context: map[string]interface{}{
-        "SITE_NAME": "Yet another website",
-    },
-})
-```
+package main
 
-### with baa
+import (
+    "github.com/go-baa/baa"
+    "github.com/go-baa/pongo2"
+)
 
-```go
-b.SetDI("render", pongo2.New(pongo2.Options{
-    Baa:        b,
-    Root:       "templates/",
-    Extensions: []string{".html"},
-    Filters:    map[string]pongo2.FilterFunction{},
-    Functions:  map[string]interface{}{},
-    Context: map[string]interface{}{
-        "SITE_NAME": "Yet another website",
-    },
-}))
+func main() {
+    // new app
+    app := baa.New()
+
+    // register pongo2 render
+    // render is template DI for baa, must be this name.
+    app.SetDI("render", pongo2.New(pongo2.Options{
+        Baa:        b,
+        Root:       "templates/",
+        Extensions: []string{".html"},
+        Functions:  map[string]interface{}{},
+        Context: map[string]interface{}{
+            "SITE_NAME": "Yet another website",
+        },
+    }))
+
+    // router
+    app.Get("/", func(c *baa.Context) {
+        c.HTML(200, "index")
+    })
+
+    // run app
+    app.Run(":1323")
+}
 ```
 
 ## usage

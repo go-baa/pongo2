@@ -7,7 +7,7 @@
 </head>
 
 <body>
-    Hello, {{ .name }}, Volt.
+    Hello, {{ name }}, Volt.
 </body>
 
 </html>

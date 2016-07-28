@@ -8,11 +8,11 @@
 
 <body>
     
-    {{ template "share/header" }}
+    {% include "share/header.html" %}
     
-    Hello, {{ .name }}
+    Hello, {{ name }}
     
-    {{ template "share/footer" }}
+    {% include "share/footer.html" %}
     
 </body>
 

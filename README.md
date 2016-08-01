@@ -53,12 +53,37 @@ This is {{ name }}.
 {% include "path/to/tpl.html" %}
 ```
 
-#### if / else
+with params:
 
 ```html
-{% if var %}
+{% include "path/to/tpl.html" with foo=var %}
+{% include "path/to/tpl.html" with foo="bar" %}
+```
+
+#### if / elif / else / endif
+
+```html
+{% if vara %}
+{% elif varb %}
 {% else %}
-{% end %}
+{% endif %}
+```
+
+#### loop
+
+map
+```html
+{% for key, value in items %}
+{{ value }}
+{% endfor %}
+```
+
+array
+```html
+{% for item in items %}
+{{ forloop.Counter }} {{ forloop.Counter0 }} {{ forloop.First }} {{ forloop.Last }} {{ forloop.Revcounter }} {{ forloop.Revcounter0 }}
+{{ item }}
+{% endfor %}
 ```
 
 #### extends / block / macro and so on ...

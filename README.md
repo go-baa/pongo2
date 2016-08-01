@@ -56,9 +56,11 @@ This is {{ name }}.
 with params:
 
 ```html
-{% include "path/to/tpl.html" with foo=var %}
-{% include "path/to/tpl.html" with foo="bar" %}
+{% include "relative/path/to/tpl.html" with foo=var %}
+{% include "relative/path/to/tpl.html" with foo="bar" %}
 ```
+
+**note**: nested template reveived param as string type. 
 
 #### if / elif / else / endif
 
@@ -69,7 +71,7 @@ with params:
 {% endif %}
 ```
 
-#### loop
+#### for
 
 map
 ```html

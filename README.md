@@ -73,14 +73,6 @@ with params:
 
 #### for
 
-map
-```html
-{% for key, value in items %}
-{{ value }}
-{% endfor %}
-```
-
-array
 ```html
 {% for item in items %}
 {{ forloop.Counter }} {{ forloop.Counter0 }} {{ forloop.First }} {{ forloop.Last }} {{ forloop.Revcounter }} {{ forloop.Revcounter0 }}

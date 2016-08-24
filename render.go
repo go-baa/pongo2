@@ -16,6 +16,7 @@ import (
 // Render the pongo2 template engine
 type Render struct {
 	Options
+	fileChanges chan notifyItem // notify file changes
 }
 
 // Options render options
@@ -80,9 +81,22 @@ func New(o Options) *Render {
 		r.Context[k] = v
 	}
 
-	// enable debug mode
 	if baa.Env != baa.PROD {
+		// enable debug mode
 		pongo2.DefaultSet.Debug = true
+
+		r.fileChanges = make(chan notifyItem, 8)
+		go r.notify()
+		go func() {
+			for item := range r.fileChanges {
+				if r.Baa != nil && r.Baa.Debug() {
+					r.Error("filechanges Receive -> " + item.path)
+				}
+				if item.event == Create || item.event == Write {
+					r.parseFile(item.path)
+				}
+			}
+		}()
 	}
 
 	// load templates

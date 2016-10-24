@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/flosch/pongo2"
+	"github.com/micate/pongo2"
 	"gopkg.in/baa.v1"
 )
 
@@ -70,7 +70,7 @@ func New(o Options) *Render {
 
 	// register filter
 	for name, filter := range o.Filters {
-		pongo2.RegisterFilter(name, filter)
+		pongo2.RegisterOrReplaceFilter(name, filter)
 	}
 
 	// merge function into context

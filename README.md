@@ -1,5 +1,5 @@
 # pongo2
-A helper for using [Pongo2](https://godoc.org/github.com/flosch/pongo2) with Baa.
+A helper for using [Pongo2](https://github.com/micate/pongo2) with Baa.
 
 ## getting started
 
@@ -7,8 +7,8 @@ A helper for using [Pongo2](https://godoc.org/github.com/flosch/pongo2) with Baa
 package main
 
 import (
-    "github.com/go-baa/baa"
     "github.com/go-baa/pongo2"
+    "gopkg.in/baa.v1"
 )
 
 func main() {

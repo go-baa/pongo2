@@ -9,8 +9,8 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/micate/pongo2"
-	"gopkg.in/baa.v1"
+	"github.com/go-baa/baa"
+	"github.com/safeie/pongo2"
 )
 
 // Render the pongo2 template engine

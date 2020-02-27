@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/go-baa/baa"
 	. "github.com/smartystreets/goconvey/convey"
-	"gopkg.in/baa.v1"
 )
 
 var b = baa.New()

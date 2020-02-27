@@ -7,8 +7,8 @@ A helper for using [Pongo2](https://github.com/micate/pongo2) with Baa.
 package main
 
 import (
+    "github.com/go-baa/baa"
     "github.com/go-baa/pongo2"
-    "gopkg.in/baa.v1"
 )
 
 func main() {
